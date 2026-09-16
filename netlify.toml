@@ -2,5 +2,9 @@
   command = "npm run build"
   publish = ".next"
 
-# Netlify's Next.js runtime is detected automatically. Environment variables are
-# set in the Netlify UI (Site configuration -> Environment variables).
+# Force the Next.js adapter so Netlify never publishes .next as plain static files.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Environment variables are set in the Netlify UI
+# (Site configuration -> Environment variables), not here.
