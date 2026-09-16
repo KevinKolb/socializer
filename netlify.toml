@@ -2,9 +2,15 @@
   command = "npm run build"
   publish = ".next"
 
+[build.environment]
+  # NEXT_PUBLIC_* values are embedded in the browser bundle on purpose
+  # (Supabase publishable key, project URL, app URL). Tell Netlify's secret
+  # scanner not to fail the build when it finds them in the output.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_APP_URL"
+
 # Force the Next.js adapter so Netlify never publishes .next as plain static files.
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Environment variables are set in the Netlify UI
-# (Site configuration -> Environment variables), not here.
+# All other environment variables are set in the Netlify UI
+# (Project configuration -> Environment variables), not here.
