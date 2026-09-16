@@ -45,6 +45,14 @@ export interface PlatformConnection extends PlatformConnectionPublic {
   refresh_token_enc: string | null;
 }
 
+/** A user's handle on a platform, recorded whether or not posting is wired up yet. */
+export interface PlatformAccount {
+  user_id: string;
+  platform: string;
+  username: string;
+  updated_at: string;
+}
+
 export interface ContentItem {
   id: string;
   user_id: string;

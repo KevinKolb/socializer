@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { PUBLIC_CONNECTION_COLUMNS, type PlatformConnectionPublic, type Profile, type Subscription } from "@/lib/types";
+import { PUBLIC_CONNECTION_COLUMNS, type PlatformAccount, type PlatformConnectionPublic, type Profile, type Subscription } from "@/lib/types";
 import { getEntitlement } from "@/lib/entitlements";
 import { PageHeader } from "@/components/PageHeader";
 import { PlatformsSection } from "./PlatformsSection";
@@ -13,7 +13,7 @@ export default async function OutSettingsPage({ searchParams }: PageProps<"/app/
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: connections }, { data: profile }, { data: sub }] = await Promise.all([
+  const [{ data: connections }, { data: profile }, { data: sub }, { data: accounts }] = await Promise.all([
     supabase
       .from("platform_connections")
       .select(PUBLIC_CONNECTION_COLUMNS)
@@ -21,6 +21,7 @@ export default async function OutSettingsPage({ searchParams }: PageProps<"/app/
       .returns<PlatformConnectionPublic[]>(),
     supabase.from("profiles").select("*").eq("id", user!.id).single<Profile>(),
     supabase.from("subscriptions").select("*").eq("user_id", user!.id).maybeSingle<Subscription>(),
+    supabase.from("platform_accounts").select("*").eq("user_id", user!.id).returns<PlatformAccount[]>(),
   ]);
   const planName = profile ? getEntitlement(profile, sub ?? null).plan.name : "Free";
 
@@ -31,7 +32,7 @@ export default async function OutSettingsPage({ searchParams }: PageProps<"/app/
         subtitle="Where approved candidates get posted."
         back={{ href: "/app/out", label: "Back to Out" }}
       />
-      <PlatformsSection connections={connections ?? []} notice={typeof sp.x === "string" ? sp.x : null} planName={planName} />
+      <PlatformsSection connections={connections ?? []} accounts={accounts ?? []} notice={typeof sp.x === "string" ? sp.x : null} planName={planName} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ X is the first platform.
 | Tab | What it is | Gear (settings) |
 |-----|------------|-----------------|
 | **In** | Post candidates coming in: the swipe deck | Interests, allowed sources, posting voice, cards per day |
-| **Out** | Posts that went out (and what was skipped) | Platform connections (X), pause/resume posting |
+| **Out** | Posts that went out (and what was skipped) | Your username on each platform, X connection, pause/resume posting |
 
 Billing lives under the account menu in the header.
 
@@ -49,8 +49,8 @@ configured (local dev, self-hosting) everyone is treated as Pro.
    - Create a **dedicated** project for Socializer. Auth users are shared across a
      Supabase project, so reusing a project from another app would merge their users.
    - Copy the URL, anon key and service-role key into `.env.local`.
-   - Run the schema: paste `supabase/migrations/0001_init.sql` into the SQL editor,
-     or `supabase db push` with the CLI. `supabase/rollback_0001.sql` undoes it.
+   - Run the schema: paste each file in `supabase/migrations/` (in order) into the SQL
+     editor, or `supabase db push` with the CLI. `supabase/rollback_0001.sql` undoes it all.
    - Auth → URL configuration: set Site URL to your app URL and add
      `{APP_URL}/auth/callback` to Redirect URLs.
 

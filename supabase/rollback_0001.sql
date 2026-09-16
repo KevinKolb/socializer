@@ -9,3 +9,4 @@ drop table if exists
   cascade;
 drop table if exists public.profiles cascade;
 drop function if exists public.set_updated_at();
+drop table if exists public.platform_accounts cascade;
