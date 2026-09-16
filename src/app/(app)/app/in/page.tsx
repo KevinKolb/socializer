@@ -66,7 +66,6 @@ export default async function InPage() {
             )}
           </>
         }
-        settingsHref="/app/in/settings"
       />
 
       {!hasConnection && (

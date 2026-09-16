@@ -40,7 +40,6 @@ export default async function OutPage() {
       <PageHeader
         title="Out"
         subtitle="Everything that went out, plus what you skipped."
-        settingsHref="/app/out/settings"
       />
 
       {(items?.length ?? 0) === 0 ? (

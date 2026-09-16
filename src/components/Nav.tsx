@@ -10,6 +10,8 @@ const tabs = [
 
 export function Nav({ email }: { email: string | null }) {
   const pathname = usePathname();
+  const section = pathname.startsWith("/app/out") ? "out" : "in";
+  const onSettings = pathname.startsWith(`/app/${section}/settings`);
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
@@ -30,6 +32,16 @@ export function Nav({ email }: { email: string | null }) {
               );
             })}
           </nav>
+          <Link
+            href={`/app/${section}/settings`}
+            aria-label={`${section === "in" ? "In" : "Out"} settings`}
+            title={section === "in" ? "Gather settings" : "Posting settings"}
+            className={`flex h-9 w-9 items-center justify-center rounded-lg border border-border text-lg ${
+              onSettings ? "bg-background" : "text-muted hover:text-foreground"
+            }`}
+          >
+            ⚙
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/app/billing" className={`text-xs ${pathname.startsWith("/app/billing") ? "font-medium" : "text-muted hover:text-foreground"}`}>
