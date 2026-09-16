@@ -30,12 +30,12 @@ configured (local dev, self-hosting) everyone is treated as Pro.
 
 ## Stack
 
-- **Next.js 16** (App Router, TypeScript, Tailwind v4) on Vercel
+- **Next.js 16** (App Router, TypeScript, Tailwind v4)
 - **Supabase**: Postgres, Auth (email/password + magic link), Row Level Security
 - **Anthropic Claude** (`claude-opus-5` by default) with the server-side `web_search` tool for discovery and structured outputs for extraction
 - **X API v2** with OAuth 2.0 + PKCE (`tweet.write`, `offline.access`)
 - **Stripe** subscriptions: a **Free** tier that posts to X only, and **Pro** for every platform
-- **Vercel Cron** for the daily gather
+- **GitHub Actions** for the daily gather (and on-demand runs), hosted UI on **Netlify**
 
 ## Local setup
 
@@ -82,17 +82,37 @@ configured (local dev, self-hosting) everyone is treated as Pro.
    Sign up, add an interest under **In → ⚙**, connect X under **Out → ⚙**, then press
    **Gather now** on the In tab (or wait for the morning cron).
 
-## Deploy to Vercel
+## Deploy to Netlify
 
-1. Import the repo, add every variable from `.env.example` as environment variables.
-2. `vercel.json` schedules `GET /api/cron/gather` daily at 06:00 UTC. Vercel sends
-   `Authorization: Bearer $CRON_SECRET` automatically when `CRON_SECRET` is set.
-3. Update the X callback URL and Stripe webhook URL to the production domain.
+1. netlify.com → **Add new site** → **Import an existing project** → GitHub → `socializer`.
+   Build command `npm run build`, publish directory `.next` (both in `netlify.toml`).
+2. Site configuration → **Environment variables**: add every variable from `.env.example`
+   except `CRON_SECRET` (optional). Set `NEXT_PUBLIC_APP_URL` to the Netlify URL.
+3. Deploy. Then add `{NETLIFY_URL}/auth/callback` to Supabase → Authentication →
+   URL Configuration, and use the Netlify URL for the X callback and Stripe webhook.
+
+### Daily gather (GitHub Actions)
+
+Discovery runs longer than Netlify's function timeout, so it runs in GitHub Actions:
+`.github/workflows/gather.yml` runs daily at 06:00 UTC and on demand.
+
+1. Repo → Settings → Secrets and variables → Actions → **Secrets**: add
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+   `ANTHROPIC_API_KEY`, and (if billing is on) `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`.
+2. To make the in-app **Gather now** button trigger the workflow, create a fine-grained
+   personal access token (GitHub → Settings → Developer settings) scoped to this repo with
+   **Actions: Read and write**, and set `GITHUB_DISPATCH_TOKEN`, `GITHUB_REPOSITORY`
+   and `GITHUB_DISPATCH_REF` in Netlify. Without them the button runs discovery inline,
+   which works on hosts that allow long requests.
+3. Actions tab → **Gather content** → **Run workflow** runs it by hand.
+
+`GET /api/cron/gather` (with `Authorization: Bearer $CRON_SECRET`) still exists for any
+external cron service on a host with long-running functions.
 
 ## How a day works
 
-1. **Cron** calls `/api/cron/gather`, which runs `gatherForUser` for every user with an
-   active interest. It only tops the queue up to the user's *cards per day*.
+1. **The daily workflow** runs `scripts/gather.ts`, which calls `gatherForUser` for every
+   user with an active interest. It only tops the queue up to the user's *cards per day*.
 2. **Discovery** (`src/lib/ai/discover.ts`) makes two Claude calls: one research pass
    with `web_search` that produces a digest, and one extraction pass with structured
    outputs that turns the digest into typed candidates. Recently seen URLs are excluded.
@@ -107,7 +127,8 @@ configured (local dev, self-hosting) everyone is treated as Pro.
 - Encrypted X tokens are not readable by the browser client at all (column-level grants);
   only server code with the service-role key can decrypt them.
 - OAuth `state` and PKCE verifier are kept in short-lived `httpOnly` cookies.
-- The cron endpoint requires `CRON_SECRET`; the Stripe webhook verifies signatures.
+- The cron endpoint requires `CRON_SECRET`; the Stripe webhook verifies signatures;
+  "Gather now" only ever dispatches a workflow for the signed-in user's own id.
 
 ## Roadmap
 

@@ -66,11 +66,41 @@ export function SwipeDeck({ initialItems, connectedPlatforms, lastRunFailed }: P
   const gatherNow = () => {
     startGather(async () => {
       const res = await fetch("/api/gather", { method: "POST" });
-      const json = (await res.json().catch(() => ({}))) as { created?: number; error?: string; skipped?: string };
+      const json = (await res.json().catch(() => ({}))) as {
+        created?: number;
+        error?: string;
+        skipped?: string;
+        queued?: boolean;
+      };
       if (!res.ok) {
         showToast({ kind: "error", text: json.error ?? "Gather failed" });
         return;
       }
+
+      if (json.queued) {
+        // Runs in GitHub Actions; poll until a new run finishes (max ~6 minutes).
+        showToast({ kind: "ok", text: "Gathering in the background… this takes a few minutes" });
+        const startedAfter = Date.now() - 5000;
+        for (let i = 0; i < 36; i++) {
+          await new Promise((r) => setTimeout(r, 10_000));
+          const s = await fetch("/api/gather/status").then((r) => r.json()).catch(() => null) as
+            | { run: { status: string; started_at: string; items_created: number; error: string | null } | null }
+            | null;
+          const run = s?.run;
+          if (run && new Date(run.started_at).getTime() >= startedAfter && run.status !== "running") {
+            showToast(
+              run.status === "done"
+                ? { kind: "ok", text: `Gathered ${run.items_created} new items` }
+                : { kind: "error", text: `Gather failed: ${run.error ?? "unknown error"}` },
+            );
+            router.refresh();
+            return;
+          }
+        }
+        showToast({ kind: "error", text: "Still gathering. Refresh the page in a minute." });
+        return;
+      }
+
       showToast({
         kind: "ok",
         text: json.skipped ? `Nothing gathered: ${json.skipped}` : `Gathered ${json.created ?? 0} new items`,
@@ -103,7 +133,7 @@ export function SwipeDeck({ initialItems, connectedPlatforms, lastRunFailed }: P
             </p>
           )}
           <button onClick={gatherNow} disabled={gathering} className="btn-primary mt-4">
-            {gathering ? "Gathering… this takes a minute or two" : "Gather now"}
+            {gathering ? "Gathering… this takes a few minutes" : "Gather now"}
           </button>
         </div>
       ) : (

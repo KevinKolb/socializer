@@ -1,0 +1,42 @@
+name: Gather content
+
+on:
+  schedule:
+    # Daily at 06:00 UTC. Adjust to taste.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      user_id:
+        description: "Gather for a single user (leave blank for everyone)"
+        required: false
+        default: ""
+
+# One gather at a time; a manual run queues behind the scheduled one.
+concurrency:
+  group: gather
+  cancel-in-progress: false
+
+jobs:
+  gather:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run gather
+        run: npx tsx scripts/gather.ts "${{ github.event.inputs.user_id }}"
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SOCIALIZER_DISCOVERY_MODEL: ${{ vars.SOCIALIZER_DISCOVERY_MODEL }}
+          # Needed so Free/Pro card limits apply. Leave unset to treat everyone as Pro.
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PRICE_ID: ${{ secrets.STRIPE_PRICE_ID }}
+          SOCIALIZER_FREE_DAILY_CARDS: ${{ vars.SOCIALIZER_FREE_DAILY_CARDS }}
+          SOCIALIZER_PRO_DAILY_CARDS: ${{ vars.SOCIALIZER_PRO_DAILY_CARDS }}
