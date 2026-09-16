@@ -6,6 +6,10 @@ export async function GET(request: NextRequest) {
   const user = await getUser();
   if (!user) return NextResponse.redirect(new URL("/login", request.url));
 
+  if (!process.env.X_CLIENT_ID || !process.env.X_CLIENT_SECRET) {
+    return NextResponse.redirect(new URL("/app/out/settings?x=not_configured", request.url));
+  }
+
   const { verifier, challenge, state } = createPkce();
   const res = NextResponse.redirect(buildAuthorizeUrl(challenge, state));
 

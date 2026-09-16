@@ -9,6 +9,10 @@ const NOTICES: Record<string, { kind: "ok" | "error"; text: string }> = {
   denied: { kind: "error", text: "You cancelled the X authorization." },
   invalid_state: { kind: "error", text: "The X sign-in expired or was tampered with. Try again." },
   failed: { kind: "error", text: "Connecting X failed. Check your X app credentials and callback URL." },
+  not_configured: {
+    kind: "error",
+    text: "X posting is not configured on this deployment yet: X_CLIENT_ID and X_CLIENT_SECRET are missing. See the README for creating the X developer app.",
+  },
 };
 
 export function PlatformsSection({
