@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getEntitlement } from "@/lib/entitlements";
 import { env } from "@/lib/env";
-import { PLANS, PLATFORM_META } from "@/lib/plans";
+import { KNOWN_PLATFORMS, PLANS, PLATFORM_META } from "@/lib/plans";
 import type { Profile, Subscription } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/app/bill
 
   const e = getEntitlement(profile, sub ?? null);
   const isPro = e.plan.id === "pro";
-  const platformList = Object.entries(PLATFORM_META);
+  const comingSoon = KNOWN_PLATFORMS.filter((k) => !PLATFORM_META[k].available).map((k) => PLATFORM_META[k].label);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -82,15 +82,12 @@ export default async function BillingPage({ searchParams }: PageProps<"/app/bill
             <ul className="mt-3 space-y-1 text-sm">
               <li>· Up to {plan.maxDailyCards} candidates a day</li>
               <li>· Drafts written in your voice</li>
-              {platformList.map(([key, meta]) => {
-                const included = plan.id === "pro" ? true : meta.freeTier;
-                return (
-                  <li key={key} className={included ? "" : "text-muted line-through"}>
-                    · {meta.label}
-                    {!meta.available && <span className="ml-1 text-xs text-muted no-underline">(coming soon)</span>}
-                  </li>
-                );
-              })}
+              <li>· X (Twitter)</li>
+              {plan.id === "pro" ? (
+                <li>· Every platform as it ships: {comingSoon.join(", ")}</li>
+              ) : (
+                <li className="text-muted">· Other platforms need Pro</li>
+              )}
             </ul>
           </div>
         ))}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PlatformConnectionPublic } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/plans";
+import { KNOWN_PLATFORMS, PLATFORM_META } from "@/lib/plans";
 import { setPlatformEnabled } from "./actions";
 import { DisconnectButton } from "./DisconnectButton";
 
@@ -67,22 +67,28 @@ export function PlatformsSection({
         )}
       </div>
 
-      <ul className="space-y-2">
-        {Object.entries(PLATFORM_META)
-          .filter(([key]) => key !== "x")
-          .map(([key, meta]) => (
-            <li key={key} className="card flex items-center gap-4 !py-3 opacity-70">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-sm font-bold">
-                {meta.label[0]}
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">{meta.label}</p>
-                <p className="text-xs text-muted">Coming soon · Pro</p>
-              </div>
-              <button className="btn-secondary !py-1 text-xs" disabled>Not yet available</button>
-            </li>
-          ))}
-      </ul>
+      <div>
+        <p className="label">Coming soon</p>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {KNOWN_PLATFORMS.filter((k) => k !== "x").map((key) => {
+            const meta = PLATFORM_META[key];
+            return (
+              <li key={key} className="card flex items-center gap-3 !py-3 opacity-70">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-xs font-bold">
+                  {meta.mark}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{meta.label}</p>
+                  <p className="truncate text-xs text-muted">{meta.note ?? "text posts"} · Pro</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-2 text-xs text-muted">
+          Want one of these first? Tell us which and we will prioritise it.
+        </p>
+      </div>
     </section>
   );
 }

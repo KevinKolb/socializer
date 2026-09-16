@@ -60,7 +60,7 @@ export default async function LandingPage() {
         {[
           ["In", "Every morning an AI researcher searches the web and social sites for your interests and drafts post candidates in your voice."],
           ["Swipe", "Open the In deck once a day. Swipe right to post, left to skip. Edit a draft first if you like."],
-          ["Out", "Approved candidates go straight out to X. See everything you have posted in the Out tab. More platforms coming."],
+          ["Out", "Approved candidates go straight out to X. Facebook, Instagram, Threads, LinkedIn, Bluesky and more are on the way."],
         ].map(([title, body]) => (
           <div key={title} className="card">
             <h3 className="font-semibold">{title}</h3>

@@ -17,15 +17,45 @@ export interface Plan {
 }
 
 /** Platforms the product knows about, including ones not built yet. */
-export const PLATFORM_META: Record<
-  Platform | "linkedin" | "threads" | "bluesky",
-  { label: string; available: boolean; freeTier: boolean }
-> = {
-  x: { label: "X (Twitter)", available: true, freeTier: true },
-  linkedin: { label: "LinkedIn", available: false, freeTier: false },
-  threads: { label: "Threads", available: false, freeTier: false },
-  bluesky: { label: "Bluesky", available: false, freeTier: false },
+export type KnownPlatform =
+  | Platform
+  | "facebook"
+  | "instagram"
+  | "threads"
+  | "linkedin"
+  | "bluesky"
+  | "mastodon"
+  | "reddit"
+  | "pinterest"
+  | "tiktok"
+  | "youtube";
+
+export interface PlatformMeta {
+  label: string;
+  /** Short brand mark for icons. */
+  mark: string;
+  available: boolean;
+  freeTier: boolean;
+  /** What a post needs on this platform, when it is more than text. */
+  note?: string;
+}
+
+export const PLATFORM_META: Record<KnownPlatform, PlatformMeta> = {
+  x:         { label: "X (Twitter)",      mark: "X",  available: true,  freeTier: true },
+  facebook:  { label: "Facebook Page",    mark: "f",  available: false, freeTier: false },
+  instagram: { label: "Instagram",        mark: "IG", available: false, freeTier: false, note: "needs an image; we will generate one" },
+  threads:   { label: "Threads",          mark: "@",  available: false, freeTier: false },
+  linkedin:  { label: "LinkedIn",         mark: "in", available: false, freeTier: false },
+  bluesky:   { label: "Bluesky",          mark: "bs", available: false, freeTier: false },
+  mastodon:  { label: "Mastodon",         mark: "M",  available: false, freeTier: false },
+  reddit:    { label: "Reddit",           mark: "r/", available: false, freeTier: false, note: "posts to a subreddit you choose" },
+  pinterest: { label: "Pinterest",        mark: "P",  available: false, freeTier: false, note: "needs an image" },
+  tiktok:    { label: "TikTok",           mark: "TT", available: false, freeTier: false, note: "needs a video or photo" },
+  youtube:   { label: "YouTube Community",mark: "▶",  available: false, freeTier: false },
 };
+
+/** Platform ids in display order. */
+export const KNOWN_PLATFORMS = Object.keys(PLATFORM_META) as KnownPlatform[];
 
 const FREE_DAILY_CARDS = Number(process.env.SOCIALIZER_FREE_DAILY_CARDS ?? "5") || 5;
 const PRO_DAILY_CARDS = Number(process.env.SOCIALIZER_PRO_DAILY_CARDS ?? "40") || 40;

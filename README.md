@@ -21,7 +21,7 @@ Billing lives under the account menu in the header.
 
 | | Free | Pro |
 |--|--|--|
-| Platforms | X only | Every platform Socializer supports (LinkedIn, Threads, Bluesky as they ship) |
+| Platforms | X only | Every platform Socializer supports, as each one ships |
 | Candidates per day | `SOCIALIZER_FREE_DAILY_CARDS` (default 5) | `SOCIALIZER_PRO_DAILY_CARDS` (default 40) |
 | Price | $0 | Your Stripe price |
 
@@ -132,7 +132,9 @@ external cron service on a host with long-running functions.
 
 ## Roadmap
 
-- More platforms (LinkedIn, Threads, Bluesky, Mastodon) behind the same `platform_connections` table
+- More platforms behind the same `platform_connections` table: Facebook Pages, Instagram
+  (needs a generated image), Threads, LinkedIn, Bluesky, Mastodon, Reddit, Pinterest, TikTok,
+  YouTube Community. The roster lives in `src/lib/plans.ts`.
 - Scheduling approved posts instead of posting instantly
 - Per-interest scheduling and per-platform voice
 - Team workspaces
