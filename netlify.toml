@@ -7,6 +7,10 @@
   # (Supabase publishable key, project URL, app URL). Tell Netlify's secret
   # scanner not to fail the build when it finds them in the output.
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_APP_URL"
+  # Turbopack's persistent build cache records env values it saw during the
+  # build. It lives only in Netlify's build cache and is never deployed, so
+  # skip it; everything that is actually published is still scanned.
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/**,.next/cache/**"
 
 # Force the Next.js adapter so Netlify never publishes .next as plain static files.
 [[plugins]]
