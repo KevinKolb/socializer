@@ -32,6 +32,8 @@ export function Nav({ email }: { email: string | null }) {
               );
             })}
           </nav>
+        </div>
+        <div className="flex items-center gap-3">
           <Link
             href={`/app/${section}/settings`}
             aria-label={`${section === "in" ? "In" : "Out"} settings`}
@@ -42,8 +44,6 @@ export function Nav({ email }: { email: string | null }) {
           >
             ⚙
           </Link>
-        </div>
-        <div className="flex items-center gap-3">
           <Link href="/app/billing" className={`text-xs ${pathname.startsWith("/app/billing") ? "font-medium" : "text-muted hover:text-foreground"}`}>
             Billing
           </Link>
