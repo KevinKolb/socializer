@@ -46,9 +46,11 @@ configured (local dev, self-hosting) everyone is treated as Pro.
    ```
 
 2. **Supabase**
-   - Create a project. Copy the URL, anon key and service-role key into `.env.local`.
+   - Create a **dedicated** project for Socializer. Auth users are shared across a
+     Supabase project, so reusing a project from another app would merge their users.
+   - Copy the URL, anon key and service-role key into `.env.local`.
    - Run the schema: paste `supabase/migrations/0001_init.sql` into the SQL editor,
-     or `supabase db push` with the CLI.
+     or `supabase db push` with the CLI. `supabase/rollback_0001.sql` undoes it.
    - Auth → URL configuration: set Site URL to your app URL and add
      `{APP_URL}/auth/callback` to Redirect URLs.
 
