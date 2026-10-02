@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { PlatformAccount, PlatformConnectionPublic } from "@/lib/types";
+import type { PlatformAccount, PlatformConnectionPublic, PostizChannel } from "@/lib/types";
 import { KNOWN_PLATFORMS, PLATFORM_META } from "@/lib/plans";
 import { savePlatformAccount, setPlatformEnabled } from "./actions";
 import { DisconnectButton } from "./DisconnectButton";
@@ -18,15 +18,18 @@ const NOTICES: Record<string, { kind: "ok" | "error"; text: string }> = {
 export function PlatformsSection({
   connections,
   accounts,
+  channels,
   notice,
   planName,
 }: {
   connections: PlatformConnectionPublic[];
   accounts: PlatformAccount[];
+  channels: PostizChannel[];
   notice: string | null;
   planName: string;
 }) {
   const x = connections.find((c) => c.platform === "x") ?? null;
+  const postizFor = (ids: readonly string[]) => channels.filter((c) => ids.includes(c.identifier));
   const n = notice ? NOTICES[notice] : null;
   const usernameFor = (platform: string) =>
     accounts.find((a) => a.platform === platform)?.username ??
@@ -37,8 +40,8 @@ export function PlatformsSection({
       <div>
         <h2 className="text-lg font-semibold">Platforms</h2>
         <p className="text-sm text-muted">
-          Record your account on each platform. Swiping right posts to every platform that is
-          connected and enabled. X is included on the Free plan
+          Record your account on each platform. Channels connected through Postiz show here
+          automatically. Without Postiz, X can also be connected directly. X is included on the Free plan
           {planName === "Free" && (
             <>; the rest need <Link href="/app/billing" className="underline">Pro</Link></>
           )}
@@ -70,11 +73,22 @@ export function PlatformsSection({
                 <div className="min-w-[10rem] flex-1">
                   <p className="font-medium">{meta.label}</p>
                   <p className="text-xs text-muted">
-                    {isX
-                      ? x
-                        ? `Connected as @${x.platform_username} · ${x.enabled ? "posting enabled" : "posting paused"}`
-                        : "Posting live · not connected"
-                      : `Posting coming soon${meta.note ? ` · ${meta.note}` : ""}`}
+                    {(() => {
+                      const viaPostiz = postizFor(meta.postiz);
+                      if (viaPostiz.length > 0) {
+                        return `Via Postiz: ${viaPostiz
+                          .map((c) => `${c.profile ? `@${c.profile}` : c.name}${c.enabled ? "" : " (off)"}`)
+                          .join(", ")}`;
+                      }
+                      if (isX) {
+                        return x
+                          ? `Connected directly as @${x.platform_username} · ${x.enabled ? "posting enabled" : "posting paused"}`
+                          : "Not connected · use Postiz above, or connect X directly";
+                      }
+                      return meta.available
+                        ? "Connect this channel in Postiz, then Sync"
+                        : `Not supported yet${meta.note ? ` · ${meta.note}` : ""}`;
+                    })()}
                   </p>
                 </div>
 
@@ -94,7 +108,7 @@ export function PlatformsSection({
                   <button className="btn-secondary !py-1.5 text-xs">Save</button>
                 </form>
 
-                {isX && (
+                {isX && postizFor(meta.postiz).length === 0 && (
                   x ? (
                     <div className="flex gap-2">
                       <form action={setPlatformEnabled.bind(null, "x", !x.enabled)}>

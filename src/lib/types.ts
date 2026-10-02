@@ -74,7 +74,8 @@ export interface Post {
   id: string;
   user_id: string;
   content_item_id: string;
-  platform: Platform;
+  /** "x" for direct posting, or any Postiz provider id (linkedin, facebook, ...). */
+  platform: string;
   platform_post_id: string | null;
   posted_text: string;
   status: "posted" | "failed";
@@ -102,6 +103,34 @@ export interface Subscription {
   cancel_at_period_end: boolean;
   updated_at: string;
 }
+
+/** Columns of postiz_settings the browser/authenticated client may read. */
+export interface PostizSettingsPublic {
+  user_id: string;
+  base_url: string;
+  api_key_hint: string;
+  last_synced_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostizSettings extends PostizSettingsPublic {
+  api_key_enc: string;
+}
+
+export interface PostizChannel {
+  user_id: string;
+  integration_id: string;
+  identifier: string;
+  name: string;
+  profile: string | null;
+  picture: string | null;
+  disabled: boolean;
+  enabled: boolean;
+  synced_at: string;
+}
+
+export const PUBLIC_POSTIZ_COLUMNS = "user_id, base_url, api_key_hint, last_synced_at, created_at, updated_at";
 
 export const PUBLIC_CONNECTION_COLUMNS =
   "id, user_id, platform, enabled, platform_user_id, platform_username, token_expires_at, scopes, created_at, updated_at";

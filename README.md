@@ -21,7 +21,7 @@ Billing lives under the account menu in the header.
 
 | | Free | Pro |
 |--|--|--|
-| Platforms | X only | Every platform Socializer supports, as each one ships |
+| Platforms | X only | Every text-capable channel in your Postiz account |
 | Candidates per day | `SOCIALIZER_FREE_DAILY_CARDS` (default 5) | `SOCIALIZER_PRO_DAILY_CARDS` (default 40) |
 | Price | $0 | Your Stripe price |
 
@@ -33,7 +33,9 @@ configured (local dev, self-hosting) everyone is treated as Pro.
 - **Next.js 16** (App Router, TypeScript, Tailwind v4)
 - **Supabase**: Postgres, Auth (email/password + magic link), Row Level Security
 - **Anthropic Claude** (`claude-opus-5` by default) with the server-side `web_search` tool for discovery and structured outputs for extraction
-- **X API v2** with OAuth 2.0 + PKCE (`tweet.write`, `offline.access`)
+- **Postiz** (public API) for publishing to every network: each user connects their own
+  Postiz account; Postiz holds the per-network logins
+- **X API v2** with OAuth 2.0 + PKCE as a direct fallback for users without Postiz
 - **Stripe** subscriptions: a **Free** tier that posts to X only, and **Pro** for every platform
 - **GitHub Actions** for the daily gather (and on-demand runs), hosted UI on **Netlify**
 
@@ -56,26 +58,31 @@ configured (local dev, self-hosting) everyone is treated as Pro.
 
 3. **Anthropic**: create an API key at console.anthropic.com and set `ANTHROPIC_API_KEY`.
 
-4. **X developer app** (developer.x.com)
+4. **Postiz** (recommended): nothing to configure server-side. Each user pastes their own
+   Postiz API key (Postiz → Settings → Public API) under **Out → ⚙**. Self-hosted Postiz
+   users also enter their backend URL. Socializer syncs their channels and posts through
+   `POST /public/v1/posts` with `type: "now"`.
+
+5. **X developer app** (optional direct fallback, developer.x.com)
    - Create a project + app, enable **User authentication settings**.
    - App permissions: *Read and write*. Type of app: *Web App, Automated App or Bot*.
    - Callback URL: `{APP_URL}/api/x/callback`. Website URL: `{APP_URL}`.
    - Copy the OAuth 2.0 Client ID and Client Secret into `.env.local`.
 
-5. **Stripe** (optional locally; the app runs with billing disabled if unset)
+6. **Stripe** (optional locally; the app runs with billing disabled if unset)
    - Create a recurring monthly Price and set `STRIPE_PRICE_ID`.
    - Webhook endpoint `{APP_URL}/api/stripe/webhook` with events
      `checkout.session.completed`, `customer.subscription.created`,
      `customer.subscription.updated`, `customer.subscription.deleted`.
      For local dev: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
 
-6. **Secrets**
+7. **Secrets**
    ```bash
    openssl rand -base64 32   # -> TOKEN_ENCRYPTION_KEY (encrypts X tokens at rest)
    openssl rand -hex 32      # -> CRON_SECRET
    ```
 
-7. **Run**
+8. **Run**
    ```bash
    npm run dev
    ```
@@ -117,7 +124,9 @@ external cron service on a host with long-running functions.
    with `web_search` that produces a digest, and one extraction pass with structured
    outputs that turns the digest into typed candidates. Recently seen URLs are excluded.
 3. **Swipe** (`/app/in`): right calls `POST /api/items/:id/decide` with `post`, which
-   refreshes the X token if needed and publishes immediately; left marks it skipped.
+   publishes immediately to every enabled Postiz channel (or directly to X when Postiz is
+   not connected); left marks it skipped. Text is trimmed per network (280 for X, 300 for
+   Bluesky, 500 for Threads/Mastodon, 3000 for LinkedIn, ...).
    Users can edit the draft before posting. Keyboard: ← skip, → post, E edit.
 4. **Out** (`/app/out`) lists every decision with a link to the live post or the error.
 

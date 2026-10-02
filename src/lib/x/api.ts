@@ -82,9 +82,9 @@ export async function createPost(accessToken: string, text: string): Promise<Pos
   return json.data;
 }
 
-/** Compose the final post text from an item: body + hashtags + link, within 280 chars. */
-export function composePostText(body: string, hashtags: string[], url: string | null): string {
-  const LIMIT = 280;
+/** Compose the final post text from an item: body + hashtags + link, within `limit` chars. */
+export function composePostText(body: string, hashtags: string[], url: string | null, limit = 280): string {
+  const LIMIT = limit;
   const URL_LEN = 23; // X counts every URL as 23 characters
   const tags = hashtags.map((h) => `#${h.replace(/^#/, "")}`).join(" ");
 

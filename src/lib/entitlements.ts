@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 import { PLANS, type Plan, type PlanId } from "@/lib/plans";
-import type { Platform, Profile, Subscription } from "@/lib/types";
+import type { Profile, Subscription } from "@/lib/types";
 
 export interface Entitlement {
   plan: Plan;
@@ -44,8 +44,9 @@ export function planId(e: Entitlement): PlanId {
   return e.plan.id;
 }
 
-export function canPostTo(e: Entitlement, platform: Platform): boolean {
-  return e.plan.platforms.includes(platform);
+/** `platform` is "x" or a Postiz provider id (linkedin, facebook, ...). */
+export function canPostTo(e: Entitlement, platform: string): boolean {
+  return e.plan.allPlatforms || e.plan.platforms.includes(platform);
 }
 
 /** Effective daily card count: the user's preference capped by their plan. */

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ContentItem, Post } from "@/lib/types";
 import { PageHeader } from "@/components/PageHeader";
+import { providerLabel } from "@/lib/postiz";
 
 export const dynamic = "force-dynamic";
 
@@ -61,16 +62,20 @@ export default async function OutPage() {
                 </div>
                 {itemPosts.map((p) => (
                   <div key={p.id} className="mt-2 rounded-lg bg-background p-2 text-xs">
-                    <span className="font-medium uppercase">{p.platform}</span>{" "}
+                    <span className="font-medium">{providerLabel(p.platform)}</span>{" "}
                     {p.status === "posted" ? (
-                      <a
-                        className="underline"
-                        target="_blank"
-                        rel="noreferrer"
-                        href={`https://x.com/i/web/status/${p.platform_post_id}`}
-                      >
-                        view post ↗
-                      </a>
+                      p.platform === "x" && p.platform_post_id && !p.platform_post_id.startsWith("postiz:") ? (
+                        <a
+                          className="underline"
+                          target="_blank"
+                          rel="noreferrer"
+                          href={`https://x.com/i/web/status/${p.platform_post_id}`}
+                        >
+                          view post ↗
+                        </a>
+                      ) : (
+                        <span className="text-success">sent</span>
+                      )
                     ) : (
                       <span className="text-danger">failed: {p.error}</span>
                     )}

@@ -1,8 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
-import { PUBLIC_CONNECTION_COLUMNS, type PlatformAccount, type PlatformConnectionPublic, type Profile, type Subscription } from "@/lib/types";
+import {
+  PUBLIC_CONNECTION_COLUMNS,
+  PUBLIC_POSTIZ_COLUMNS,
+  type PlatformAccount,
+  type PlatformConnectionPublic,
+  type PostizChannel,
+  type PostizSettingsPublic,
+  type Profile,
+  type Subscription,
+} from "@/lib/types";
 import { getEntitlement } from "@/lib/entitlements";
 import { PageHeader } from "@/components/PageHeader";
 import { PlatformsSection } from "./PlatformsSection";
+import { PostizSection } from "./PostizSection";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +23,14 @@ export default async function OutSettingsPage({ searchParams }: PageProps<"/app/
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: connections }, { data: profile }, { data: sub }, { data: accounts }] = await Promise.all([
+  const [
+    { data: connections },
+    { data: profile },
+    { data: sub },
+    { data: accounts },
+    { data: postiz },
+    { data: channels },
+  ] = await Promise.all([
     supabase
       .from("platform_connections")
       .select(PUBLIC_CONNECTION_COLUMNS)
@@ -22,8 +39,22 @@ export default async function OutSettingsPage({ searchParams }: PageProps<"/app/
     supabase.from("profiles").select("*").eq("id", user!.id).single<Profile>(),
     supabase.from("subscriptions").select("*").eq("user_id", user!.id).maybeSingle<Subscription>(),
     supabase.from("platform_accounts").select("*").eq("user_id", user!.id).returns<PlatformAccount[]>(),
+    supabase
+      .from("postiz_settings")
+      .select(PUBLIC_POSTIZ_COLUMNS)
+      .eq("user_id", user!.id)
+      .maybeSingle<PostizSettingsPublic>(),
+    supabase
+      .from("postiz_channels")
+      .select("*")
+      .eq("user_id", user!.id)
+      .order("identifier")
+      .returns<PostizChannel[]>(),
   ]);
-  const planName = profile ? getEntitlement(profile, sub ?? null).plan.name : "Free";
+
+  const entitlement = profile ? getEntitlement(profile, sub ?? null) : null;
+  const planName = entitlement?.plan.name ?? "Free";
+  const planAllPlatforms = entitlement?.plan.allPlatforms ?? false;
 
   return (
     <div className="space-y-10">
@@ -32,7 +63,19 @@ export default async function OutSettingsPage({ searchParams }: PageProps<"/app/
         subtitle="Where approved candidates get posted."
         back={{ href: "/app/out", label: "Back to Out" }}
       />
-      <PlatformsSection connections={connections ?? []} accounts={accounts ?? []} notice={typeof sp.x === "string" ? sp.x : null} planName={planName} />
+      <PostizSection
+        settings={postiz ?? null}
+        channels={channels ?? []}
+        planName={planName}
+        planAllPlatforms={planAllPlatforms}
+      />
+      <PlatformsSection
+        connections={connections ?? []}
+        accounts={accounts ?? []}
+        channels={channels ?? []}
+        notice={typeof sp.x === "string" ? sp.x : null}
+        planName={planName}
+      />
     </div>
   );
 }
