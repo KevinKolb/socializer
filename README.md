@@ -59,7 +59,7 @@ configured (local dev, self-hosting) everyone is treated as Pro.
 3. **Anthropic**: create an API key at console.anthropic.com and set `ANTHROPIC_API_KEY`.
 
 4. **Postiz** (recommended): nothing to configure server-side. Each user pastes their own
-   Postiz API key (Postiz → Settings → Public API) under **Out → ⚙**. Self-hosted Postiz
+   Postiz API key (Postiz → Settings → Developers → Public API) under **Out → ⚙**. Self-hosted Postiz
    users also enter their backend URL. Socializer syncs their channels and posts through
    `POST /public/v1/posts` with `type: "now"`.
 

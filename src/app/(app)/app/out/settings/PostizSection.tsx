@@ -20,8 +20,8 @@ export function PostizSection({
         <h2 className="text-lg font-semibold">Postiz</h2>
         <p className="text-sm text-muted">
           Connect your Postiz account and Socializer posts through it to every channel you enable
-          below. Postiz handles the logins to each network. Get the key in Postiz under
-          Settings → Public API.
+          below. Postiz handles the logins to each network. Find the key in Postiz under
+          Settings → Developers → Public API (click the eye icon to reveal it).
         </p>
       </div>
 

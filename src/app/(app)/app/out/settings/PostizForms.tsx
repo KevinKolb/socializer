@@ -17,7 +17,7 @@ export function PostizConnectForm() {
           type="password"
           className="input"
           autoComplete="off"
-          placeholder="paste the key from Postiz → Settings → Public API"
+          placeholder="paste the key from Postiz → Settings → Developers → Public API"
           required
         />
       </div>
